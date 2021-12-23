@@ -40,6 +40,7 @@ helm.sh/chart: {{ include "pghero.chart" . }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- include "pghero.rechargeLabels" . }}
 {{- end }}
 
 {{/*
@@ -58,5 +59,20 @@ Create the name of the service account to use
 {{- default (include "pghero.fullname" .) .Values.serviceAccount.name }}
 {{- else }}
 {{- default "default" .Values.serviceAccount.name }}
+{{- end }}
+{{- end }}
+
+{{/*
+Recharge labels
+*/}}
+{{- define "pghero.rechargeLabels" -}}
+{{- if .Values.rechargeLabels.env }}
+rechargeapps.net/env: {{ .Values.rechargeLabels.env }}
+{{- end }}
+{{- if .Values.rechargeLabels.app }}
+rechargeapps.net/app: {{ .Values.rechargeLabels.app }}
+{{- end }}
+{{- if .Values.rechargeLabels.owner }}
+rechargeapps.net/owner: {{ .Values.rechargeLabels.owner }}
 {{- end }}
 {{- end }}

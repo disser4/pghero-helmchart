@@ -18,7 +18,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "pghero.selectorLabels" . | nindent 8 }}
+        {{- include "pghero.labels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
@@ -28,35 +28,7 @@ spec:
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
-      - env:
-        - name: DATABASE_URL
-        {{ if .Values.secretName }}
-          valueFrom:
-            secretKeyRef:
-              name: "{{ .Values.secretName }}"
-              key: "database_url"
-        {{ else }}
-          value: "postgres://{{ .Values.database.user }}:{{ .Values.database.password }}@{{ .Values.database.url }}:{{ .Values.database.port }}/{{ .Values.database.dbName }}"
-        {{ end }}
-        - name: PGHERO_USERNAME
-        {{ if .Values.secretName }}
-          valueFrom:
-            secretKeyRef:
-              name: "{{ .Values.secretName }}"
-              key: "username"
-        {{ else }}
-          value: "{{ .Values.pgheroUser }}"
-        {{ end }}
-        - name: PGHERO_PASSWORD
-        {{ if .Values.secretName }}
-          valueFrom:
-            secretKeyRef:
-              name: "{{ .Values.secretName }}"
-              key: "password"
-        {{ else }}
-          value: "{{ .Values.pgheroPassword }}"
-        {{ end }}
-        name: {{ .Chart.Name }}
+      - name: {{ .Chart.Name }}
         securityContext:
           {{- toYaml .Values.securityContext | nindent 12 }}
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
@@ -65,16 +37,11 @@ spec:
           - name: http
             containerPort: 8080
             protocol: TCP
-        # livenessProbe:
-        #   httpGet:
-        #     path: /
-        #     port: http
-        # readinessProbe:
-        #   httpGet:
-        #     path: /
-        #     port: http
         resources:
           {{- toYaml .Values.resources | nindent 12 }}
+        envFrom:
+        - secretRef:
+            name: {{ template "pghero.name" . }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

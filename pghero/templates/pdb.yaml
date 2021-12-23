@@ -1,0 +1,14 @@
+{{- if .Values.pdb.enabled }}
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: {{include "pghero.name" .}}
+  labels:
+    {{- include "pghero.labels" . | nindent 4 }}
+spec:
+  minAvailable: {{.Values.pdb.minAvailable}}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "pghero.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}
